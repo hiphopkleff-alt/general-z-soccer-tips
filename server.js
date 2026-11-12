@@ -27,7 +27,7 @@ return process.env.GOV_API_KEY;
 }
 
 // --------------------------------------------------
-// SAFE REQUEST TO GOD OF VIRTUALS
+// GOD OF VIRTUALS API REQUEST
 // --------------------------------------------------
 
 async function requestProvider(resource, query = {}) {
@@ -71,7 +71,6 @@ params.set(name, String(query[name]));
 }
 }
 
-// Trial page size is limited to 25 rows.
 const limit = Number(params.get('limit') || 25);
 const offset = Number(params.get('offset') || 0);
 
@@ -86,8 +85,10 @@ offset > 1000
 const error = new Error(
 'Invalid pagination. Limit must be 1-25 and offset 0-1000.'
 );
+
 error.status = 400;
 throw error;
+
 }
 
 params.set('limit', String(limit));
@@ -97,14 +98,17 @@ const endpoint =
 "${API_BASE}/platforms/${PLATFORM}/${resource}/?${params.toString()}";
 
 const controller = new AbortController();
-const timeout = setTimeout(() => controller.abort(), 15000);
+
+const timeout = setTimeout(() => {
+controller.abort();
+}, 15000);
 
 try {
 const response = await fetch(endpoint, {
 method: 'GET',
 headers: {
-'Authorization': "Bearer ${apiKey}",
-'Accept': 'application/json'
+Authorization: "Bearer ${apiKey}",
+Accept: 'application/json'
 },
 signal: controller.signal
 });
@@ -131,9 +135,12 @@ return body;
 
 } catch (error) {
 if (error.name === 'AbortError') {
-const timeoutError = new Error('The data provider timed out.');
-timeoutError.status = 504;
-throw timeoutError;
+const timeoutError = new Error(
+'The data provider timed out.'
+);
+
+  timeoutError.status = 504;
+  throw timeoutError;
 }
 
 throw error;
@@ -144,7 +151,7 @@ clearTimeout(timeout);
 }
 
 // --------------------------------------------------
-// COMMON API ROUTE HANDLER
+// COMMON API HANDLER
 // --------------------------------------------------
 
 async function handleResource(req, res, resource) {
@@ -210,7 +217,7 @@ return handleResource(req, res, 'odds');
 });
 
 // --------------------------------------------------
-// COMPLETED MATCH RESULTS
+// RESULTS
 // --------------------------------------------------
 
 app.get('/api/results', (req, res) => {
@@ -243,7 +250,7 @@ return handleResource(req, res, 'standings');
 });
 
 // --------------------------------------------------
-// MATCH ANALYSIS - NOT YET ENABLED
+// MATCH ANALYSIS
 // --------------------------------------------------
 
 app.get('/api/match/:id/analysis', (req, res) => {
@@ -256,7 +263,7 @@ message:
 });
 
 // --------------------------------------------------
-// MAIN APPLICATION
+// STATIC APPLICATION
 // --------------------------------------------------
 
 app.use(express.static(__dirname));
