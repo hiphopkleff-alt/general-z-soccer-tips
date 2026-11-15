@@ -846,7 +846,7 @@ button{font:inherit;cursor:pointer}
  </button>
 </nav>
 
-<script>
+ <script>
 'use strict';
 
 const API = {
@@ -944,10 +944,10 @@ function getMatchStatus(fixture) {
 }
 
 /*
-  Calculate odds-implied probabilities.
+  ODDS-BASED ESTIMATION
 
-  These are estimates derived from supplied odds,
-  not independently verified AI predictions.
+  These probabilities are normalized from provider odds.
+  They are not independently verified AI predictions.
 */
 
 function normalizedProbabilities(odds) {
@@ -968,6 +968,17 @@ function normalizedProbabilities(odds) {
 
   return inverse.map(value => value / total);
 }
+
+/*
+  INDIVIDUAL MARKETS:
+  Home Win, Draw, Away Win,
+  Over/Under 1.5, 2.5, 3.5,
+  BTTS Yes.
+
+  DOUBLE CHANCE:
+  1X and X2 remain available for analysis,
+  but are excluded from VIP ranking.
+*/
 
 function buildMarkets(fixture) {
   const odds = fixture.odds || {};
@@ -992,7 +1003,8 @@ function buildMarkets(fixture) {
       key,
       label,
       probability: probabilities[index] * 100,
-      odds: Number(odds[key])
+      odds: Number(odds[key]),
+      category: 'individual'
     });
   }
 
@@ -1008,13 +1020,18 @@ function buildMarkets(fixture) {
       key,
       label,
       probability: probabilities[0] * 100,
-      odds: Number(odds[key])
+      odds: Number(odds[key]),
+      category: 'individual'
     });
   }
+
+  // Match result markets
 
   addThreeWay('home', 'HOME WIN');
   addThreeWay('draw', 'DRAW');
   addThreeWay('away', 'AWAY WIN');
+
+  // Goals markets
 
   addTwoWay(
     'over_1_5',
@@ -1052,14 +1069,15 @@ function buildMarkets(fixture) {
     'UNDER 3.5 GOALS'
   );
 
+  // Both Teams To Score
+
   addTwoWay(
     'btts_yes',
     'btts_no',
     'BTTS YES'
   );
 
-  // Double chance is calculated from the normalized
-  // home/draw/away probabilities.
+  // Double Chance calculations
 
   const threeWay = normalizedProbabilities([
     odds.home,
@@ -1072,14 +1090,16 @@ function buildMarkets(fixture) {
       key: '1x',
       label: 'DOUBLE CHANCE 1X',
       probability: (threeWay[0] + threeWay[1]) * 100,
-      odds: null
+      odds: null,
+      category: 'double-chance'
     });
 
     markets.push({
       key: 'x2',
       label: 'DOUBLE CHANCE X2',
       probability: (threeWay[1] + threeWay[2]) * 100,
-      odds: null
+      odds: null,
+      category: 'double-chance'
     });
   }
 
@@ -1094,20 +1114,44 @@ function buildMarkets(fixture) {
     );
 }
 
+/*
+  IMPORTANT FIX:
+
+  The best selection is chosen ONLY from individual markets.
+
+  Double Chance cannot become the top selection.
+*/
+
 function preparePredictions(fixtures) {
   return fixtures.map(fixture => {
     const markets = buildMarkets(fixture);
 
+    const individualMarkets = markets.filter(
+      market => market.category === 'individual'
+    );
+
+    const best = individualMarkets[0] || null;
+
     return {
       fixture,
       markets,
-      best: markets[0] || null
+      individualMarkets,
+      best
     };
+
   }).filter(item => item.best);
 }
 
 function probabilityText(value) {
   return `${Math.round(value)}%`;
+}
+
+function displayWeek(value) {
+  if (!value) return '—';
+
+  return String(value)
+    .replace(/^week\s*/i, '')
+    .trim();
 }
 
 function matchCard(item) {
@@ -1127,7 +1171,7 @@ function matchCard(item) {
           </div>
 
           <div class="match-id">
-            WEEK ${escapeHTML(fixture.week || '—')}
+            WEEK ${escapeHTML(displayWeek(fixture.week))}
             · MATCH ${escapeHTML(fixture.match || '—')}
           </div>
         </div>
@@ -1161,6 +1205,7 @@ function matchCard(item) {
         gap:10px;
         margin-top:15px;
       ">
+
         <div class="team">
           <div class="team-logo">⚽</div>
           <div class="team-name">
@@ -1174,22 +1219,26 @@ function matchCard(item) {
             ${escapeHTML(fixture.away)}
           </div>
         </div>
+
       </div>
 
       <div class="match-bottom">
 
         <div class="market-info">
-          <b>TOP ODDS-BASED SELECTION</b><br>
+          <b>TOP INDIVIDUAL MARKET</b><br>
+
           ${escapeHTML(pick.label)}
+
           <br>
+
           <span style="color:#20e878">
             Implied probability:
             ${probabilityText(pick.probability)}
           </span>
+
           <br>
-          ${pick.odds
-            ? `Odds: ${pick.odds.toFixed(2)}`
-            : 'Calculated double-chance probability'}
+
+          Odds: ${pick.odds.toFixed(2)}
         </div>
 
         <button class="analysis-btn"
@@ -1236,26 +1285,33 @@ function vipCard(item, index) {
       </div>
 
       <div class="vip-details">
+
         <b>Competition:</b>
         ${escapeHTML(fixture.league || 'Virtual Football')}
+
         <br>
 
         <b>Selection:</b>
         ${escapeHTML(pick.label)}
+
         <br>
 
         <b>Odds:</b>
-        ${pick.odds ? pick.odds.toFixed(2) : 'Not supplied'}
+        ${pick.odds.toFixed(2)}
+
         <br>
 
         <b>Kickoff:</b>
         ${escapeHTML(formatKickoff(fixture.kickoff_at))}
+
         <br>
 
         <span style="color:#aaa">
-          Ranked using normalized provider odds.
+          Ranked using individual-market normalized odds.
+          Double Chance is excluded from VIP rankings.
           Not a guaranteed result.
         </span>
+
       </div>
 
     </article>
@@ -1283,11 +1339,22 @@ function renderDashboard() {
     return Number.isFinite(time) && time > now;
   });
 
-  // VIP shortlist: only the strongest selections
-  // with at least 70% normalized implied probability.
+  /*
+    VIP RANKING FIX:
+
+    Only individual markets are considered.
+    Double Chance 1X and X2 are excluded.
+
+    Minimum screening threshold: 70%.
+    Maximum VIP selections: 5.
+  */
 
   vipPredictions = upcoming
-    .filter(item => item.best && item.best.probability >= 70)
+    .filter(item =>
+      item.best &&
+      item.best.category === 'individual' &&
+      item.best.probability >= 70
+    )
     .sort((a, b) =>
       b.best.probability - a.best.probability
     )
@@ -1305,8 +1372,13 @@ function renderDashboard() {
     $('totalVIP').textContent = vipPredictions.length;
   }
 
-  // No verified prediction outcomes have been recorded yet.
-  if ($('accuracy')) $('accuracy').textContent = '—';
+  // Accuracy remains unverified until real outcomes are recorded.
+
+  if ($('accuracy')) {
+    $('accuracy').textContent = '—';
+  }
+
+  // Home upcoming matches
 
   if ($('homeMatches')) {
     $('homeMatches').innerHTML = upcoming.length
@@ -1318,15 +1390,19 @@ function renderDashboard() {
         );
   }
 
+  // All match predictions
+
   if ($('matchList')) {
     $('matchList').innerHTML = allPredictions.length
       ? allPredictions.map(matchCard).join('')
       : emptyState(
           '⚽',
           'NO MATCHES AVAILABLE',
-          'No fixtures with usable odds were returned.'
+          'No fixtures with usable individual-market odds were returned.'
         );
   }
+
+  // Home VIP section
 
   if ($('homeVIP')) {
     $('homeVIP').innerHTML = vipPredictions.length
@@ -1335,9 +1411,11 @@ function renderDashboard() {
       : emptyState(
           '🏆',
           'NO QUALIFIED VIP SELECTIONS',
-          'No upcoming selection currently meets the 70% implied-probability screening threshold.'
+          'No individual market currently meets the 70% implied-probability screening threshold.'
         );
   }
+
+  // Full VIP page
 
   if ($('vipList')) {
     $('vipList').innerHTML = vipPredictions.length
@@ -1345,12 +1423,11 @@ function renderDashboard() {
       : emptyState(
           '🏆',
           'NO QUALIFIED VIP SELECTIONS',
-          'The current odds-based screening has not found a selection meeting the VIP threshold.'
+          'No individual market currently meets the VIP screening threshold.'
         );
   }
 
-  // History remains zero until picks and actual outcomes
-  // have been recorded and verified.
+  // History remains empty until actual outcomes are verified.
 
   [
     'homeWon',
@@ -1379,7 +1456,9 @@ async function loadFixtures() {
     });
 
     if (!response.ok) {
-      throw new Error(`Fixture API returned ${response.status}`);
+      throw new Error(
+        `Fixture API returned ${response.status}`
+      );
     }
 
     const result = await response.json();
@@ -1399,6 +1478,7 @@ async function loadFixtures() {
     }
 
     allFixtures = fixtures;
+
     allPredictions = preparePredictions(fixtures);
 
     renderDashboard();
@@ -1454,6 +1534,7 @@ function openMatch(eventId) {
   const marketHTML = markets.length
     ? markets.map((market, index) => `
         <div class="analysis-card">
+
           <h3>
             #${index + 1}
             ${escapeHTML(market.label)}
@@ -1464,12 +1545,22 @@ function openMatch(eventId) {
             ${market.odds
               ? market.odds.toFixed(2)
               : 'Not supplied'}
+
             <br>
+
             Normalized implied probability:
+
             <b style="color:#ffd83d">
               ${probabilityText(market.probability)}
             </b>
+
+            ${
+              market.category === 'double-chance'
+                ? '<br><span style="color:#aaa;font-size:11px">Analysis only — excluded from VIP rankings.</span>'
+                : ''
+            }
           </p>
+
         </div>
       `).join('')
     : emptyState(
@@ -1514,6 +1605,7 @@ function openMatch(eventId) {
       </h2>
 
       <div class="analysis-card">
+
         <h3>
           ${escapeHTML(fixture.home)}
           VS
@@ -1523,19 +1615,28 @@ function openMatch(eventId) {
         <p>
           Competition:
           ${escapeHTML(fixture.league || 'Virtual Football')}
+
           <br>
+
           Week:
-          ${escapeHTML(fixture.week || '—')}
+          ${escapeHTML(displayWeek(fixture.week))}
+
           <br>
+
           Match:
           ${escapeHTML(fixture.match || '—')}
+
           <br>
+
           Kickoff:
           ${escapeHTML(formatKickoff(fixture.kickoff_at))}
+
           <br>
+
           Event ID:
           ${escapeHTML(fixture.event_id)}
         </p>
+
       </div>
 
       <h3 style="color:#ffd83d;margin:20px 0 12px">
@@ -1552,7 +1653,8 @@ function openMatch(eventId) {
       ">
         Probabilities are normalized estimates derived from
         the provider's supplied odds. They are not independently
-        validated predictions or guarantees.
+        validated predictions or guarantees. Double Chance markets
+        are available for analysis but are excluded from VIP rankings.
       </p>
 
     </div>
@@ -1581,6 +1683,7 @@ async function checkHealth() {
         true
       );
     }
+
   } catch (error) {
     console.error('Health check failed:', error);
   }
@@ -1591,11 +1694,16 @@ async function initializeApp() {
   await loadFixtures();
 
   // Provider recommends polling every 30 seconds.
+
   setInterval(loadFixtures, 30000);
 }
 
-document.addEventListener('DOMContentLoaded', initializeApp);
-</script>
+document.addEventListener(
+  'DOMContentLoaded',
+  initializeApp
+);
+</script>   
+
 
 </body>
 </html>
