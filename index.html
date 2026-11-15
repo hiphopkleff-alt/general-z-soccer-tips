@@ -3,593 +3,821 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#090909">
+<meta name="theme-color" content="#080808">
 <title>GENERAL Z-SOCCER TIPS V1.0</title>
 
 <style>
 :root{
-  --bg:#080808;
-  --panel:#111111;
-  --panel2:#181818;
-  --gold:#d8ad55;
-  --gold2:#f5d58a;
-  --text:#f5f5f5;
-  --muted:#929292;
-  --green:#36d99b;
-  --red:#ff6262;
-  --border:rgba(216,173,85,.2);
+ --bg:#080808;
+ --panel:#111;
+ --panel2:#181818;
+ --gold:#e5b900;
+ --gold2:#ffd83d;
+ --green:#20e878;
+ --red:#ff4242;
+ --muted:#999;
+ --white:#fff;
+ --border:rgba(255,216,61,.45);
 }
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
+*{box-sizing:border-box;margin:0;padding:0}
 
 body{
-  background:
-    radial-gradient(ellipse at top,rgba(216,173,85,.10),transparent 42%),
-    linear-gradient(160deg,#080808,#101010 55%,#050505);
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
-  min-height:100vh;
+ background:
+ radial-gradient(ellipse at top,rgba(255,190,0,.13),transparent 40%),
+ linear-gradient(160deg,#080808,#101010 55%,#050505);
+ color:var(--white);
+ font-family:Arial,Helvetica,sans-serif;
+ min-height:100vh;
 }
 
-button{
-  font:inherit;
-}
+button{font:inherit;cursor:pointer}
 
 .app{
-  max-width:1200px;
-  margin:auto;
-  padding:18px 16px 105px;
+ max-width:1100px;
+ margin:auto;
+ padding:12px 12px 105px;
 }
 
 /* HEADER */
 
 .header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px 0 24px;
-  border-bottom:1px solid var(--border);
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:10px;
+ padding:12px 2px 18px;
+ border-bottom:1px solid var(--border);
 }
 
 .brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
+ display:flex;
+ align-items:center;
+ gap:12px;
 }
 
 .logo{
-  width:48px;
-  height:48px;
-  border:1px solid var(--gold);
-  border-radius:14px;
-  display:grid;
-  place-items:center;
-  color:var(--gold2);
-  font-size:25px;
-  background:linear-gradient(145deg,#242015,#090909);
-  box-shadow:0 0 20px rgba(216,173,85,.12);
+ width:58px;
+ height:58px;
+ border:2px solid var(--gold2);
+ border-radius:50%;
+ display:grid;
+ place-items:center;
+ font-size:35px;
+ background:radial-gradient(circle,#332600,#090909);
+ box-shadow:0 0 22px rgba(255,210,0,.35);
 }
 
 .brand h1{
-  font-size:16px;
-  letter-spacing:1px;
-  color:var(--gold2);
+ font-size:clamp(14px,3.5vw,22px);
+ color:var(--gold2);
+ font-weight:900;
+ letter-spacing:1px;
 }
 
 .brand p{
-  font-size:10px;
-  color:var(--muted);
-  letter-spacing:2px;
-  margin-top:5px;
+ font-size:9px;
+ color:#ddd;
+ letter-spacing:1.5px;
+ margin-top:5px;
 }
 
 .version{
-  border:1px solid var(--border);
-  color:var(--gold);
-  border-radius:20px;
-  padding:7px 11px;
-  font-size:10px;
-  font-weight:bold;
+ border:2px solid var(--gold);
+ color:var(--gold2);
+ border-radius:50%;
+ width:53px;
+ height:53px;
+ display:grid;
+ place-items:center;
+ font-weight:900;
+ font-size:12px;
+ box-shadow:0 0 15px rgba(255,210,0,.2);
 }
 
-/* PAGE */
+/* PAGES */
 
-.page{
-  display:none;
-  animation:fade .25s ease;
-}
-
-.page.active{
-  display:block;
-}
+.page{display:none;animation:fade .25s ease}
+.page.active{display:block}
 
 @keyframes fade{
-  from{opacity:0;transform:translateY(5px)}
-  to{opacity:1;transform:translateY(0)}
+ from{opacity:0;transform:translateY(5px)}
+ to{opacity:1;transform:translateY(0)}
 }
 
-.page-heading{
-  margin:25px 0 20px;
-}
-
-.page-heading h2{
-  font-size:23px;
-  margin-bottom:7px;
-}
-
-.page-heading p{
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.6;
-}
+.page-heading{margin:23px 0 17px}
+.page-heading h2{font-size:23px;color:var(--gold2)}
+.page-heading p{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6}
 
 /* STATUS */
 
 .system-status{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  padding:13px;
-  background:#121212;
-  border:1px solid var(--border);
-  border-radius:12px;
-  margin-bottom:20px;
+ display:flex;
+ align-items:center;
+ gap:10px;
+ background:#111;
+ border:1px solid var(--border);
+ padding:11px;
+ border-radius:10px;
+ margin-bottom:17px;
 }
 
 .status-dot{
-  width:9px;
-  height:9px;
-  border-radius:50%;
-  background:var(--red);
-  box-shadow:0 0 10px rgba(255,98,98,.5);
+ width:9px;height:9px;border-radius:50%;
+ background:var(--red);
+ box-shadow:0 0 10px var(--red);
+ flex-shrink:0;
 }
 
-.system-status strong{
-  font-size:11px;
-  color:var(--gold2);
-}
+.system-status strong{font-size:10px;color:var(--gold2)}
+.system-status span{display:block;color:var(--muted);font-size:9px;margin-top:4px}
 
-.system-status span{
-  display:block;
-  font-size:10px;
-  color:var(--muted);
-  margin-top:4px;
-}
-
-/* DASHBOARD */
+/* HERO */
 
 .hero{
-  padding:23px;
-  border:1px solid var(--border);
-  border-radius:18px;
-  background:
-    radial-gradient(circle at right top,rgba(216,173,85,.14),transparent 55%),
-    linear-gradient(145deg,#19160f,#101010);
-  margin-bottom:20px;
+ position:relative;
+ overflow:hidden;
+ padding:23px 18px;
+ border:1px solid var(--gold);
+ border-radius:17px;
+ background:
+ radial-gradient(circle at 90% 10%,rgba(255,200,0,.23),transparent 48%),
+ linear-gradient(145deg,#25200e,#101010 65%,#080808);
+ box-shadow:0 0 20px rgba(255,200,0,.12);
+ margin-bottom:18px;
 }
 
 .hero-label{
-  color:var(--gold);
-  font-size:10px;
-  letter-spacing:2px;
-  font-weight:bold;
+ color:var(--gold2);
+ font-size:10px;
+ font-weight:bold;
+ letter-spacing:2px;
 }
 
 .hero h2{
-  font-size:25px;
-  line-height:1.3;
-  margin:13px 0 9px;
+ font-size:29px;
+ line-height:1.2;
+ margin:12px 0 9px;
 }
 
 .hero p{
-  font-size:12px;
-  color:#aaa;
-  line-height:1.7;
+ font-size:11px;
+ color:#bbb;
+ line-height:1.7;
+ max-width:500px;
 }
 
 .hero-tag{
-  display:inline-block;
-  margin-top:17px;
-  padding:9px 13px;
-  border-radius:8px;
-  border:1px solid var(--border);
-  color:var(--gold2);
-  font-size:10px;
-  letter-spacing:1px;
+ display:inline-block;
+ margin-top:15px;
+ background:rgba(255,210,0,.13);
+ border:1px solid var(--gold);
+ color:var(--gold2);
+ padding:8px 11px;
+ border-radius:7px;
+ font-size:9px;
+ font-weight:bold;
+ letter-spacing:1px;
 }
 
+/* STATS */
+
 .stats{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:12px;
-  margin-bottom:22px;
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:10px;
+ margin-bottom:23px;
 }
 
 .stat-card{
-  background:linear-gradient(145deg,#181818,#101010);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:17px;
+ text-align:center;
+ padding:16px 8px;
+ border:1px solid var(--gold);
+ border-radius:13px;
+ background:linear-gradient(145deg,#191919,#080808);
+ box-shadow:0 0 12px rgba(255,210,0,.08);
 }
 
+.stat-icon{font-size:24px;margin-bottom:8px}
 .stat-card .label{
-  color:var(--muted);
-  font-size:10px;
-  letter-spacing:1px;
+ font-size:9px;
+ font-weight:bold;
+ color:#ddd;
+ letter-spacing:.5px;
 }
 
 .stat-card .value{
-  font-size:27px;
-  font-weight:bold;
-  margin-top:12px;
-  color:var(--gold2);
+ font-size:27px;
+ font-weight:900;
+ margin-top:8px;
+ color:var(--gold2);
 }
 
 .stat-card .description{
-  color:#777;
-  font-size:10px;
-  margin-top:6px;
+ font-size:9px;
+ color:#888;
+ margin-top:5px;
 }
 
-/* SECTIONS */
+/* SECTION HEADERS */
 
 .section-title{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin:25px 0 13px;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:8px;
+ padding:12px;
+ margin:22px 0 12px;
+ border:1px solid var(--gold);
+ border-radius:12px;
+ background:
+ radial-gradient(circle at right,rgba(255,210,0,.22),transparent 55%),
+ linear-gradient(90deg,#28200a,#101010);
 }
 
 .section-title h3{
-  font-size:14px;
-  letter-spacing:.5px;
+ font-size:14px;
+ font-weight:900;
 }
 
-.section-title span{
-  color:var(--gold);
-  font-size:10px;
+.section-title .section-icon{
+ font-size:23px;
+ margin-right:7px;
 }
+
+.section-title button{
+ border:1px solid #111;
+ border-radius:30px;
+ padding:9px 12px;
+ background:linear-gradient(135deg,#ffe75a,#e9ae00);
+ color:#080808;
+ font-weight:900;
+ font-size:9px;
+ white-space:nowrap;
+}
+
+/* MATCH CARDS */
+
+.match-card{
+ position:relative;
+ overflow:hidden;
+ border:1px solid var(--gold);
+ border-left:4px solid var(--green);
+ border-radius:14px;
+ background:linear-gradient(145deg,#171717,#080808);
+ padding:14px 11px;
+ margin-bottom:13px;
+ box-shadow:0 0 13px rgba(255,210,0,.08);
+}
+
+.match-top{
+ display:grid;
+ grid-template-columns:1fr 1.5fr 1fr;
+ align-items:center;
+ gap:5px;
+}
+
+.match-league{
+ font-size:11px;
+ font-weight:bold;
+ color:var(--gold2);
+ line-height:1.5;
+}
+
+.match-id{
+ color:#aaa;
+ font-size:9px;
+ margin-top:6px;
+}
+
+.team{
+ text-align:center;
+ min-width:0;
+}
+
+.team-logo{
+ font-size:30px;
+ margin-bottom:5px;
+}
+
+.team-name{
+ font-size:11px;
+ font-weight:900;
+ overflow-wrap:anywhere;
+}
+
+.match-center{text-align:center}
+.match-time{
+ font-size:10px;
+ color:var(--gold2);
+ font-weight:bold;
+ margin-bottom:7px;
+}
+
+.vs{
+ font-size:26px;
+ font-weight:900;
+ font-style:italic;
+ color:var(--gold2);
+ text-shadow:0 0 12px rgba(255,210,0,.4);
+}
+
+.win-prob{
+ text-align:center;
+ background:#07180e;
+ border:1px solid var(--green);
+ border-radius:10px;
+ padding:7px 5px;
+}
+
+.win-prob span{
+ display:block;
+ font-size:9px;
+ font-weight:bold;
+ color:var(--green);
+}
+
+.win-prob strong{
+ display:block;
+ font-size:22px;
+ margin-top:5px;
+}
+
+.match-bottom{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ flex-wrap:wrap;
+ gap:9px;
+ border-top:1px solid rgba(255,210,0,.3);
+ margin-top:12px;
+ padding-top:11px;
+}
+
+.market-info{
+ font-size:11px;
+ font-weight:bold;
+ color:#eee;
+ line-height:1.7;
+}
+
+.market-info b{color:var(--gold2)}
+
+.analysis-btn{
+ border:none;
+ border-radius:30px;
+ padding:10px 14px;
+ background:linear-gradient(135deg,#ffe75a,#e6ad00);
+ color:#080808;
+ font-size:10px;
+ font-weight:900;
+}
+
+/* VIP */
+
+.vip-card{
+ border:2px solid var(--gold2);
+ border-radius:14px;
+ padding:14px 11px;
+ margin-bottom:14px;
+ background:
+ radial-gradient(circle at top right,rgba(255,210,0,.16),transparent 50%),
+ linear-gradient(145deg,#1a1608,#080808);
+ box-shadow:0 0 17px rgba(255,210,0,.18);
+}
+
+.vip-label{
+ display:inline-block;
+ padding:6px 9px;
+ border-radius:6px;
+ background:linear-gradient(135deg,#ffe75a,#d9a300);
+ color:#090909;
+ font-size:9px;
+ font-weight:900;
+ margin-bottom:12px;
+}
+
+.vip-match{
+ display:grid;
+ grid-template-columns:1fr auto 1fr auto;
+ align-items:center;
+ gap:7px;
+}
+
+.vip-team{
+ text-align:center;
+ font-size:11px;
+ font-weight:bold;
+}
+
+.vip-team .team-logo{font-size:30px}
+
+.vip-vs{
+ color:var(--gold2);
+ font-size:19px;
+ font-weight:900;
+}
+
+.confidence{
+ text-align:center;
+ background:linear-gradient(135deg,#ffe75a,#d9a300);
+ color:#090909;
+ padding:9px 10px;
+ border-radius:12px;
+ min-width:75px;
+}
+
+.confidence span{display:block;font-size:8px;font-weight:bold}
+.confidence strong{display:block;font-size:21px;margin-top:4px}
+
+.vip-details{
+ border-top:1px solid var(--border);
+ margin-top:12px;
+ padding-top:10px;
+ font-size:10px;
+ line-height:1.8;
+ color:#ddd;
+}
+
+.vip-details b{color:var(--gold2)}
+
+/* HISTORY */
+
+.history-grid{
+ display:grid;
+ grid-template-columns:repeat(2,1fr);
+ border:1px solid var(--gold);
+ border-radius:13px;
+ background:#101010;
+ overflow:hidden;
+}
+
+.history-item{
+ text-align:center;
+ padding:17px 5px;
+ border-bottom:1px solid var(--border);
+}
+
+.history-item:nth-child(odd){border-right:1px solid var(--border)}
+.history-item .history-icon{font-size:23px}
+.history-item span{display:block;font-size:10px;margin-top:6px;color:#ccc}
+.history-item strong{display:block;font-size:23px;margin-top:5px}
+.won{color:var(--green)!important}
+.lost{color:var(--red)!important}
+.pending{color:var(--gold2)!important}
 
 /* EMPTY STATES */
 
 .empty-state{
-  text-align:center;
-  padding:35px 18px;
-  border:1px dashed rgba(216,173,85,.3);
-  border-radius:15px;
-  background:rgba(20,20,20,.65);
+ text-align:center;
+ padding:29px 16px;
+ border:1px dashed rgba(255,210,0,.4);
+ border-radius:13px;
+ background:rgba(20,20,20,.7);
+ margin-bottom:14px;
 }
 
-.empty-icon{
-  font-size:30px;
-  margin-bottom:12px;
-}
+.empty-icon{font-size:30px;margin-bottom:10px}
+.empty-state h3{font-size:12px;color:var(--gold2);margin-bottom:8px}
+.empty-state p{font-size:10px;line-height:1.7;color:#999}
 
-.empty-state h3{
-  font-size:14px;
-  color:var(--gold2);
-  margin-bottom:8px;
-}
-
-.empty-state p{
-  font-size:11px;
-  line-height:1.7;
-  color:var(--muted);
-}
-
-/* ANALYSIS CARDS */
+/* GENERAL CARDS */
 
 .analysis-card{
-  background:linear-gradient(145deg,#181818,#101010);
-  border:1px solid var(--border);
-  border-left:3px solid var(--gold);
-  border-radius:13px;
-  padding:17px;
-  margin-bottom:12px;
+ border:1px solid var(--border);
+ border-left:3px solid var(--gold);
+ background:linear-gradient(145deg,#191919,#0b0b0b);
+ border-radius:12px;
+ padding:15px;
+ margin-bottom:11px;
 }
 
-.analysis-card h3{
-  font-size:13px;
-  margin-bottom:8px;
-}
-
-.analysis-card p{
-  color:var(--muted);
-  font-size:11px;
-  line-height:1.7;
-}
-
-/* GOLD BADGE */
+.analysis-card h3{font-size:12px;margin-bottom:7px}
+.analysis-card p{font-size:10px;color:#999;line-height:1.7}
 
 .gold-badge{
-  display:inline-block;
-  background:rgba(216,173,85,.12);
-  border:1px solid var(--border);
-  color:var(--gold2);
-  padding:6px 9px;
-  border-radius:7px;
-  font-size:9px;
-  font-weight:bold;
-  letter-spacing:1px;
+ display:inline-block;
+ padding:6px 9px;
+ border:1px solid var(--gold);
+ color:var(--gold2);
+ border-radius:6px;
+ font-size:9px;
+ font-weight:bold;
+}
+
+/* SETTINGS */
+
+.setting-row{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ padding:15px;
+ border-bottom:1px solid #292929;
+ font-size:11px;
+ color:#ddd;
+}
+
+.setting-row:last-child{border:0}
+
+/* FOOTER */
+
+.footer{
+ text-align:center;
+ padding:25px 0 10px;
+ color:#666;
+ font-size:9px;
+ line-height:1.8;
+ letter-spacing:1px;
 }
 
 /* NAVIGATION */
 
 .bottom-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  z-index:100;
-  background:rgba(9,9,9,.96);
-  backdrop-filter:blur(15px);
-  border-top:1px solid var(--border);
-  padding:10px 5px calc(10px + env(safe-area-inset-bottom));
-  display:flex;
-  justify-content:space-around;
+ position:fixed;
+ left:0;right:0;bottom:0;
+ z-index:100;
+ display:flex;
+ justify-content:space-around;
+ background:rgba(7,7,7,.97);
+ backdrop-filter:blur(15px);
+ border-top:2px solid var(--gold);
+ padding:7px 3px calc(7px + env(safe-area-inset-bottom));
 }
 
 .nav-btn{
-  background:none;
-  border:none;
-  color:#777;
-  cursor:pointer;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:5px;
-  min-width:55px;
-  font-size:9px;
+ flex:1;
+ min-width:0;
+ border:0;
+ border-radius:12px;
+ background:none;
+ color:#aaa;
+ padding:8px 2px;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ gap:5px;
+ font-size:9px;
+ font-weight:bold;
 }
 
-.nav-btn .icon{
-  font-size:19px;
-}
-
+.nav-btn .icon{font-size:22px}
 .nav-btn.active{
-  color:var(--gold2);
-}
-
-.nav-btn.active .icon{
-  filter:drop-shadow(0 0 7px rgba(216,173,85,.5));
-}
-
-/* FOOTER */
-
-.footer{
-  text-align:center;
-  padding:25px 0 10px;
-  color:#555;
-  font-size:9px;
-  letter-spacing:1px;
+ background:linear-gradient(135deg,#ffe75a,#e2a900);
+ color:#080808;
+ box-shadow:0 0 13px rgba(255,210,0,.25);
 }
 
 @media(min-width:700px){
-  .stats{
-    grid-template-columns:repeat(4,minmax(0,1fr));
-  }
-
-  .hero h2{
-    font-size:32px;
-  }
-
-  .app{
-    padding-left:25px;
-    padding-right:25px;
-  }
+ .app{padding-left:25px;padding-right:25px}
+ .stats{grid-template-columns:repeat(4,1fr)}
+ .hero h2{font-size:36px}
+ .match-card{padding:20px}
+ .team-name{font-size:14px}
+ .match-league{font-size:13px}
+ .history-grid{grid-template-columns:repeat(4,1fr)}
+ .history-item{border-bottom:0;border-right:1px solid var(--border)}
+ .history-item:last-child{border-right:0}
 }
 </style>
 </head>
 
 <body>
-
 <div class="app">
 
 <header class="header">
-  <div class="brand">
-    <div class="logo">⚽</div>
-    <div>
-      <h1>GENERAL Z-SOCCER</h1>
-      <p>ZOOM SOCCER INTELLIGENCE</p>
-    </div>
+ <div class="brand">
+  <div class="logo">⚽</div>
+  <div>
+   <h1>GENERAL Z-SOCCER<br>TIPS V1.0</h1>
+   <p>FOOTBALL DATA · AI ANALYSIS</p>
   </div>
-  <div class="version">V1.0</div>
+ </div>
+ <div class="version">V1.0</div>
 </header>
 
 <!-- HOME -->
 
 <section class="page active" id="home">
 
-  <div class="page-heading">
-    <h2>Intelligence Dashboard</h2>
-    <p>Your dedicated Bet9ja Zoom Soccer prediction and analysis platform.</p>
+ <div class="page-heading">
+  <h2>Intelligence Dashboard</h2>
+  <p>Your dedicated Bet9ja Zoom Soccer prediction and analysis platform.</p>
+ </div>
+
+ <div class="system-status">
+  <div class="status-dot"></div>
+  <div>
+   <strong id="systemStatus">DATA SOURCE NOT CONNECTED</strong>
+   <span id="systemMessage">Waiting for verified Zoom Soccer data.</span>
+  </div>
+ </div>
+
+ <div class="hero">
+  <div class="hero-label">GENERAL Z-SOCCER TIPS V1.0</div>
+  <h2>FOOTBALL DATA<br>AI ANALYSIS<br>PREDICTION INTELLIGENCE</h2>
+  <p>Advanced virtual football analysis, probability modelling and performance tracking in one professional platform.</p>
+  <div class="hero-tag">BET9JA ZOOM SOCCER · ANALYSIS ONLY</div>
+ </div>
+
+ <div class="stats">
+  <div class="stat-card">
+   <div class="stat-icon">⚽</div>
+   <div class="label">TOTAL MATCHES</div>
+   <div class="value" id="totalMatches">—</div>
+   <div class="description">Verified fixtures</div>
   </div>
 
-  <div class="system-status">
-    <div class="status-dot"></div>
-    <div>
-      <strong id="systemStatus">DATA SOURCE NOT CONNECTED</strong>
-      <span>Waiting for an authorized Zoom Soccer data source.</span>
-    </div>
+  <div class="stat-card">
+   <div class="stat-icon">🧠</div>
+   <div class="label">AI PREDICTIONS</div>
+   <div class="value" id="totalPredictions">—</div>
+   <div class="description">Model-generated picks</div>
   </div>
 
-  <div class="hero">
-    <div class="hero-label">GENERAL Z-SOCCER TIPS</div>
-    <h2>Predict With<br>Intelligence.</h2>
-    <p>
-      Advanced virtual football analysis, probability modelling
-      and performance tracking in one professional platform.
-    </p>
-    <div class="hero-tag">BET9JA ZOOM SOCCER · ANALYSIS ONLY</div>
+  <div class="stat-card">
+   <div class="stat-icon">♛</div>
+   <div class="label">VIP PREDICTIONS</div>
+   <div class="value" id="totalVIP">—</div>
+   <div class="description">Qualified selections</div>
   </div>
 
-  <div class="stats">
-
-    <div class="stat-card">
-      <div class="label">AVAILABLE MATCHES</div>
-      <div class="value">—</div>
-      <div class="description">Awaiting verified fixtures</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="label">PREDICTIONS</div>
-      <div class="value">—</div>
-      <div class="description">Awaiting model analysis</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="label">VIP PICKS</div>
-      <div class="value">—</div>
-      <div class="description">Strong selections only</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="label">VERIFIED ACCURACY</div>
-      <div class="value">—</div>
-      <div class="description">Based on recorded results</div>
-    </div>
-
+  <div class="stat-card">
+   <div class="stat-icon">🛡️</div>
+   <div class="label">VERIFIED ACCURACY</div>
+   <div class="value" id="accuracy">—</div>
+   <div class="description">Recorded results only</div>
   </div>
+ </div>
 
-  <div class="section-title">
-    <h3>PLATFORM OVERVIEW</h3>
-    <span>V1.0</span>
-  </div>
+ <div class="section-title">
+  <h3>⚽ UPCOMING MATCHES</h3>
+  <button onclick="showPage('matches')">VIEW ALL →</button>
+ </div>
 
-  <div class="analysis-card">
-    <h3>⚽ Zoom Soccer Analysis</h3>
-    <p>Virtual match identification, statistical evaluation and probability-based predictions.</p>
+ <div id="homeMatches">
+  <div class="empty-state">
+   <div class="empty-icon">⚽</div>
+   <h3>AWAITING VERIFIED FIXTURES</h3>
+   <p>Zoom Soccer matches will appear here after the authorized data connection is working.</p>
   </div>
+ </div>
 
-  <div class="analysis-card">
-    <h3>📊 Prediction Intelligence</h3>
-    <p>Market probabilities, score estimates, confidence ratings and risk assessment.</p>
-  </div>
+ <div class="section-title">
+  <h3>♛ VIP PREDICTIONS</h3>
+  <button onclick="showPage('vip')">VIEW ALL VIP →</button>
+ </div>
 
-  <div class="analysis-card">
-    <h3>🏆 Performance Verification</h3>
-    <p>Track predictions against verified final results without inventing successful outcomes.</p>
+ <div id="homeVIP">
+  <div class="empty-state">
+   <div class="empty-icon">🏆</div>
+   <h3>AWAITING VIP ANALYSIS</h3>
+   <p>Only qualified predictions will appear here after the model has analysed verified matches.</p>
   </div>
+ </div>
+
+ <div class="section-title">
+  <h3>◷ PREDICTION HISTORY</h3>
+  <button onclick="showPage('history')">VIEW HISTORY →</button>
+ </div>
+
+ <div class="history-grid">
+  <div class="history-item">
+   <div class="history-icon">✅</div>
+   <span>WON</span>
+   <strong class="won" id="homeWon">0</strong>
+  </div>
+  <div class="history-item">
+   <div class="history-icon">❌</div>
+   <span>LOST</span>
+   <strong class="lost" id="homeLost">0</strong>
+  </div>
+  <div class="history-item">
+   <div class="history-icon">⌛</div>
+   <span>PENDING</span>
+   <strong class="pending" id="homePending">0</strong>
+  </div>
+  <div class="history-item">
+   <div class="history-icon">📊</div>
+   <span>ACCURACY</span>
+   <strong class="won" id="homeAccuracy">—</strong>
+  </div>
+ </div>
 
 </section>
 
 <!-- MATCHES -->
 
 <section class="page" id="matches">
+ <div class="page-heading">
+  <h2>Zoom Soccer Matches</h2>
+  <p>Verified Bet9ja Zoom Soccer fixtures and match information.</p>
+ </div>
 
-  <div class="page-heading">
-    <h2>Zoom Soccer Matches</h2>
-    <p>Verified virtual fixtures and match information.</p>
-  </div>
-
+ <div id="matchList">
   <div class="empty-state">
-    <div class="empty-icon">⚽</div>
-    <h3>FIXTURE DATA NOT CONNECTED</h3>
-    <p>
-      Your Zoom Soccer match list will appear here
-      after we connect an authorized data source.
-      No ordinary football fixtures will be substituted.
-    </p>
+   <div class="empty-icon">⚽</div>
+   <h3>FIXTURE DATA NOT CONNECTED</h3>
+   <p>Match information will appear here when the authorized Zoom Soccer feed is available.</p>
   </div>
-
-</section>
-
-<!-- PREDICTIONS -->
-
-<section class="page" id="predictions">
-
-  <div class="page-heading">
-    <h2>Predictions</h2>
-    <p>Probability-based Zoom Soccer match predictions.</p>
-  </div>
-
-  <div class="empty-state">
-    <div class="empty-icon">📊</div>
-    <h3>AWAITING MATCH ANALYSIS</h3>
-    <p>
-      Predictions will be generated after verified
-      Zoom Soccer match data becomes available.
-    </p>
-  </div>
-
+ </div>
 </section>
 
 <!-- VIP -->
 
 <section class="page" id="vip">
+ <div class="page-heading">
+  <h2>VIP Predictions</h2>
+  <p>Highest-confidence selections from the prediction model.</p>
+ </div>
 
-  <div class="page-heading">
-    <h2>VIP Intelligence</h2>
-    <p>Highest-confidence selections from the prediction model.</p>
-  </div>
+ <div class="analysis-card">
+  <span class="gold-badge">VIP INTELLIGENCE</span>
+  <h3 style="margin-top:12px">SELECTIVE PREDICTION ENGINE</h3>
+  <p>Only selections meeting the model's confidence requirements will qualify for VIP classification.</p>
+ </div>
 
-  <div class="analysis-card">
-    <span class="gold-badge">VIP ANALYSIS</span>
-    <h3 style="margin-top:14px">SELECTIVE PREDICTION ENGINE</h3>
-    <p>
-      Only predictions meeting our model's confidence
-      requirements will qualify for VIP classification.
-      No artificial confidence ratings.
-    </p>
-  </div>
-
+ <div id="vipList">
   <div class="empty-state">
-    <div class="empty-icon">🏆</div>
-    <h3>NO VERIFIED VIP PICKS YET</h3>
-    <p>VIP recommendations will appear when verified fixtures have been analysed.</p>
+   <div class="empty-icon">🏆</div>
+   <h3>NO VERIFIED VIP PICKS YET</h3>
+   <p>VIP recommendations will appear after verified matches have been analysed.</p>
   </div>
-
+ </div>
 </section>
 
 <!-- HISTORY -->
 
 <section class="page" id="history">
+ <div class="page-heading">
+  <h2>Prediction History</h2>
+  <p>Transparent records checked against verified final results.</p>
+ </div>
 
-  <div class="page-heading">
-    <h2>Prediction History</h2>
-    <p>Transparent records of previously generated predictions.</p>
+ <div class="history-grid">
+  <div class="history-item">
+   <div class="history-icon">📚</div>
+   <span>RECORDED</span>
+   <strong id="historyRecorded">0</strong>
   </div>
-
-  <div class="stats">
-    <div class="stat-card">
-      <div class="label">RECORDED</div>
-      <div class="value">0</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="label">WON</div>
-      <div class="value">0</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="label">LOST</div>
-      <div class="value">0</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="label">ACCURACY</div>
-      <div class="value">—</div>
-    </div>
+  <div class="history-item">
+   <div class="history-icon">✅</div>
+   <span>WON</span>
+   <strong class="won" id="historyWon">0</strong>
   </div>
+  <div class="history-item">
+   <div class="history-icon">❌</div>
+   <span>LOST</span>
+   <strong class="lost" id="historyLost">0</strong>
+  </div>
+  <div class="history-item">
+   <div class="history-icon">📊</div>
+   <span>ACCURACY</span>
+   <strong class="won" id="historyAccuracy">—</strong>
+  </div>
+ </div>
 
+ <div id="historyList" style="margin-top:15px">
   <div class="empty-state">
-    <div class="empty-icon">📚</div>
-    <h3>NO RECORDED PREDICTIONS</h3>
-    <p>Verified prediction records will be displayed here.</p>
+   <div class="empty-icon">📚</div>
+   <h3>NO RECORDED PREDICTIONS</h3>
+   <p>Prediction records and their verified outcomes will appear here.</p>
   </div>
-
+ </div>
 </section>
 
-<!-- FOOTER -->
+<!-- SETTINGS -->
+
+<section class="page" id="settings">
+ <div class="page-heading">
+  <h2>Platform Settings</h2>
+  <p>GENERAL Z-SOCCER TIPS V1.0 information.</p>
+ </div>
+
+ <div class="analysis-card">
+  <span class="gold-badge">PLATFORM INFORMATION</span>
+  <h3 style="margin-top:12px">GENERAL Z-SOCCER TIPS V1.0</h3>
+  <p>Independent Bet9ja Zoom Soccer prediction and analysis platform.</p>
+ </div>
+
+ <div class="analysis-card">
+  <h3>⚽ Data Integrity</h3>
+  <p>Only verified virtual match information and confirmed results should be used for predictions and performance records.</p>
+ </div>
+
+ <div class="analysis-card">
+  <h3>🧠 Prediction Model</h3>
+  <p>Predictions are probability estimates, not guarantees of match outcomes.</p>
+ </div>
+
+ <div class="analysis-card">
+  <h3>🔒 Platform Purpose</h3>
+  <p>This platform provides football analysis and predictions. It does not process bets or betting transactions.</p>
+ </div>
+</section>
 
 <div class="footer">
-  GENERAL Z-SOCCER TIPS V1.0<br>
-  FOOTBALL DATA · MODEL ANALYSIS · PREDICTION INTELLIGENCE
+ GENERAL Z-SOCCER TIPS V1.0<br>
+ FOOTBALL DATA · AI ANALYSIS · PREDICTION INTELLIGENCE
 </div>
 
 </div>
@@ -597,59 +825,48 @@ button{
 <!-- BOTTOM NAVIGATION -->
 
 <nav class="bottom-nav">
+ <button class="nav-btn active" onclick="showPage('home',this)">
+  <span class="icon">⌂</span>HOME
+ </button>
 
-  <button class="nav-btn active" data-page="home" onclick="showPage('home',this)">
-    <span class="icon">⌂</span>
-    HOME
-  </button>
+ <button class="nav-btn" onclick="showPage('matches',this)">
+  <span class="icon">⚽</span>MATCHES
+ </button>
 
-  <button class="nav-btn" data-page="matches" onclick="showPage('matches',this)">
-    <span class="icon">⚽</span>
-    MATCHES
-  </button>
+ <button class="nav-btn" onclick="showPage('vip',this)">
+  <span class="icon">♛</span>VIP
+ </button>
 
-  <button class="nav-btn" data-page="predictions" onclick="showPage('predictions',this)">
-    <span class="icon">◈</span>
-    PICKS
-  </button>
+ <button class="nav-btn" onclick="showPage('history',this)">
+  <span class="icon">▤</span>HISTORY
+ </button>
 
-  <button class="nav-btn" data-page="vip" onclick="showPage('vip',this)">
-    <span class="icon">♛</span>
-    VIP
-  </button>
-
-  <button class="nav-btn" data-page="history" onclick="showPage('history',this)">
-    <span class="icon">◷</span>
-    HISTORY
-  </button>
-
+ <button class="nav-btn" onclick="showPage('settings',this)">
+  <span class="icon">⚙</span>SETTINGS
+ </button>
 </nav>
 
 <script>
 function showPage(page,button){
+ document.querySelectorAll('.page').forEach(item=>{
+  item.classList.remove('active');
+ });
 
-  document.querySelectorAll('.page').forEach(item=>{
-    item.classList.remove('active');
-  });
+ document.querySelectorAll('.nav-btn').forEach(item=>{
+  item.classList.remove('active');
+ });
 
-  document.querySelectorAll('.nav-btn').forEach(item=>{
-    item.classList.remove('active');
-  });
+ const selected=document.getElementById(page);
 
-  const selected=document.getElementById(page);
+ if(selected){
+  selected.classList.add('active');
+ }
 
-  if(selected){
-    selected.classList.add('active');
-  }
+ if(button){
+  button.classList.add('active');
+ }
 
-  if(button){
-    button.classList.add('active');
-  }
-
-  window.scrollTo({
-    top:0,
-    behavior:'smooth'
-  });
+ window.scrollTo({top:0,behavior:'smooth'});
 }
 </script>
 
