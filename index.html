@@ -847,27 +847,754 @@ button{font:inherit;cursor:pointer}
 </nav>
 
 <script>
-function showPage(page,button){
- document.querySelectorAll('.page').forEach(item=>{
-  item.classList.remove('active');
- });
+'use strict';
 
- document.querySelectorAll('.nav-btn').forEach(item=>{
-  item.classList.remove('active');
- });
+const API = {
+  fixtures: '/api/fixtures?limit=25&offset=0',
+  health: '/api/health'
+};
 
- const selected=document.getElementById(page);
+let allFixtures = [];
+let allPredictions = [];
+let vipPredictions = [];
 
- if(selected){
-  selected.classList.add('active');
- }
+const $ = id => document.getElementById(id);
 
- if(button){
-  button.classList.add('active');
- }
-
- window.scrollTo({top:0,behavior:'smooth'});
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  })[char]);
 }
+
+function showPage(page, button) {
+  document.querySelectorAll('.page').forEach(item => {
+    item.classList.remove('active');
+  });
+
+  document.querySelectorAll('.nav-btn').forEach(item => {
+    item.classList.remove('active');
+  });
+
+  const selected = $(page);
+
+  if (selected) selected.classList.add('active');
+
+  if (button) {
+    button.classList.add('active');
+  } else {
+    const nav = document.querySelector(
+      `.nav-btn[onclick*="'${page}'"]`
+    );
+    if (nav) nav.classList.add('active');
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setStatus(title, message, online) {
+  const status = $('systemStatus');
+  const description = $('systemMessage');
+  const dot = document.querySelector('.status-dot');
+
+  if (status) status.textContent = title;
+  if (description) description.textContent = message;
+
+  if (dot) {
+    dot.style.background = online ? '#20e878' : '#ff4242';
+    dot.style.boxShadow = online
+      ? '0 0 10px #20e878'
+      : '0 0 10px #ff4242';
+  }
+}
+
+function formatKickoff(value) {
+  if (!value) return 'TIME NOT AVAILABLE';
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'TIME NOT AVAILABLE';
+  }
+
+  return date.toLocaleString('en-NG', {
+    timeZone: 'Africa/Lagos',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+}
+
+function getMatchStatus(fixture) {
+  const date = new Date(fixture.kickoff_at);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'SCHEDULED';
+  }
+
+  return date.getTime() > Date.now()
+    ? 'UPCOMING'
+    : 'TIME PASSED';
+}
+
+/*
+  Calculate odds-implied probabilities.
+
+  These are estimates derived from supplied odds,
+  not independently verified AI predictions.
+*/
+
+function normalizedProbabilities(odds) {
+  const valid = odds.map(Number);
+
+  if (
+    valid.some(value =>
+      !Number.isFinite(value) || value <= 1
+    )
+  ) {
+    return null;
+  }
+
+  const inverse = valid.map(value => 1 / value);
+  const total = inverse.reduce((sum, value) => sum + value, 0);
+
+  if (!total) return null;
+
+  return inverse.map(value => value / total);
+}
+
+function buildMarkets(fixture) {
+  const odds = fixture.odds || {};
+  const markets = [];
+
+  function addThreeWay(key, label) {
+    const probabilities = normalizedProbabilities([
+      odds.home,
+      odds.draw,
+      odds.away
+    ]);
+
+    if (!probabilities) return;
+
+    const index = {
+      home: 0,
+      draw: 1,
+      away: 2
+    }[key];
+
+    markets.push({
+      key,
+      label,
+      probability: probabilities[index] * 100,
+      odds: Number(odds[key])
+    });
+  }
+
+  function addTwoWay(key, opposite, label) {
+    const probabilities = normalizedProbabilities([
+      odds[key],
+      odds[opposite]
+    ]);
+
+    if (!probabilities) return;
+
+    markets.push({
+      key,
+      label,
+      probability: probabilities[0] * 100,
+      odds: Number(odds[key])
+    });
+  }
+
+  addThreeWay('home', 'HOME WIN');
+  addThreeWay('draw', 'DRAW');
+  addThreeWay('away', 'AWAY WIN');
+
+  addTwoWay(
+    'over_1_5',
+    'under_1_5',
+    'OVER 1.5 GOALS'
+  );
+
+  addTwoWay(
+    'under_1_5',
+    'over_1_5',
+    'UNDER 1.5 GOALS'
+  );
+
+  addTwoWay(
+    'over_2_5',
+    'under_2_5',
+    'OVER 2.5 GOALS'
+  );
+
+  addTwoWay(
+    'under_2_5',
+    'over_2_5',
+    'UNDER 2.5 GOALS'
+  );
+
+  addTwoWay(
+    'over_3_5',
+    'under_3_5',
+    'OVER 3.5 GOALS'
+  );
+
+  addTwoWay(
+    'under_3_5',
+    'over_3_5',
+    'UNDER 3.5 GOALS'
+  );
+
+  addTwoWay(
+    'btts_yes',
+    'btts_no',
+    'BTTS YES'
+  );
+
+  // Double chance is calculated from the normalized
+  // home/draw/away probabilities.
+
+  const threeWay = normalizedProbabilities([
+    odds.home,
+    odds.draw,
+    odds.away
+  ]);
+
+  if (threeWay) {
+    markets.push({
+      key: '1x',
+      label: 'DOUBLE CHANCE 1X',
+      probability: (threeWay[0] + threeWay[1]) * 100,
+      odds: null
+    });
+
+    markets.push({
+      key: 'x2',
+      label: 'DOUBLE CHANCE X2',
+      probability: (threeWay[1] + threeWay[2]) * 100,
+      odds: null
+    });
+  }
+
+  return markets
+    .filter(item =>
+      Number.isFinite(item.probability) &&
+      item.probability > 0 &&
+      item.probability <= 100
+    )
+    .sort((a, b) =>
+      b.probability - a.probability
+    );
+}
+
+function preparePredictions(fixtures) {
+  return fixtures.map(fixture => {
+    const markets = buildMarkets(fixture);
+
+    return {
+      fixture,
+      markets,
+      best: markets[0] || null
+    };
+  }).filter(item => item.best);
+}
+
+function probabilityText(value) {
+  return `${Math.round(value)}%`;
+}
+
+function matchCard(item) {
+  const fixture = item.fixture;
+  const pick = item.best;
+
+  const status = getMatchStatus(fixture);
+
+  return `
+    <article class="match-card">
+
+      <div class="match-top">
+
+        <div>
+          <div class="match-league">
+            ${escapeHTML(fixture.league || 'Virtual Football')}
+          </div>
+
+          <div class="match-id">
+            WEEK ${escapeHTML(fixture.week || '—')}
+            · MATCH ${escapeHTML(fixture.match || '—')}
+          </div>
+        </div>
+
+        <div class="match-center">
+          <div class="match-time">
+            ${escapeHTML(formatKickoff(fixture.kickoff_at))}
+          </div>
+
+          <div class="vs">VS</div>
+
+          <div style="
+            font-size:9px;
+            color:${status === 'UPCOMING' ? '#20e878' : '#ffc857'};
+            margin-top:5px;
+            font-weight:bold;
+          ">
+            ${status}
+          </div>
+        </div>
+
+        <div class="match-id" style="text-align:right">
+          ID<br>${escapeHTML(fixture.event_id)}
+        </div>
+
+      </div>
+
+      <div style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+        margin-top:15px;
+      ">
+        <div class="team">
+          <div class="team-logo">⚽</div>
+          <div class="team-name">
+            ${escapeHTML(fixture.home)}
+          </div>
+        </div>
+
+        <div class="team">
+          <div class="team-logo">⚽</div>
+          <div class="team-name">
+            ${escapeHTML(fixture.away)}
+          </div>
+        </div>
+      </div>
+
+      <div class="match-bottom">
+
+        <div class="market-info">
+          <b>TOP ODDS-BASED SELECTION</b><br>
+          ${escapeHTML(pick.label)}
+          <br>
+          <span style="color:#20e878">
+            Implied probability:
+            ${probabilityText(pick.probability)}
+          </span>
+          <br>
+          ${pick.odds
+            ? `Odds: ${pick.odds.toFixed(2)}`
+            : 'Calculated double-chance probability'}
+        </div>
+
+        <button class="analysis-btn"
+          onclick="openMatch('${escapeHTML(fixture.event_id)}')">
+          VIEW ANALYSIS
+        </button>
+
+      </div>
+
+    </article>
+  `;
+}
+
+function vipCard(item, index) {
+  const fixture = item.fixture;
+  const pick = item.best;
+
+  return `
+    <article class="vip-card">
+
+      <div class="vip-label">
+        VIP SHORTLIST #${index + 1}
+      </div>
+
+      <div class="vip-match">
+
+        <div class="vip-team">
+          <div class="team-logo">⚽</div>
+          ${escapeHTML(fixture.home)}
+        </div>
+
+        <div class="vip-vs">VS</div>
+
+        <div class="vip-team">
+          <div class="team-logo">⚽</div>
+          ${escapeHTML(fixture.away)}
+        </div>
+
+        <div class="confidence">
+          <span>IMPLIED</span>
+          <strong>${probabilityText(pick.probability)}</strong>
+        </div>
+
+      </div>
+
+      <div class="vip-details">
+        <b>Competition:</b>
+        ${escapeHTML(fixture.league || 'Virtual Football')}
+        <br>
+
+        <b>Selection:</b>
+        ${escapeHTML(pick.label)}
+        <br>
+
+        <b>Odds:</b>
+        ${pick.odds ? pick.odds.toFixed(2) : 'Not supplied'}
+        <br>
+
+        <b>Kickoff:</b>
+        ${escapeHTML(formatKickoff(fixture.kickoff_at))}
+        <br>
+
+        <span style="color:#aaa">
+          Ranked using normalized provider odds.
+          Not a guaranteed result.
+        </span>
+      </div>
+
+    </article>
+  `;
+}
+
+function emptyState(icon, title, message) {
+  return `
+    <div class="empty-state">
+      <div class="empty-icon">${icon}</div>
+      <h3>${escapeHTML(title)}</h3>
+      <p>${escapeHTML(message)}</p>
+    </div>
+  `;
+}
+
+function renderDashboard() {
+  const now = Date.now();
+
+  const upcoming = allPredictions.filter(item => {
+    const time = new Date(
+      item.fixture.kickoff_at
+    ).getTime();
+
+    return Number.isFinite(time) && time > now;
+  });
+
+  // VIP shortlist: only the strongest selections
+  // with at least 70% normalized implied probability.
+
+  vipPredictions = upcoming
+    .filter(item => item.best && item.best.probability >= 70)
+    .sort((a, b) =>
+      b.best.probability - a.best.probability
+    )
+    .slice(0, 5);
+
+  if ($('totalMatches')) {
+    $('totalMatches').textContent = allFixtures.length;
+  }
+
+  if ($('totalPredictions')) {
+    $('totalPredictions').textContent = upcoming.length;
+  }
+
+  if ($('totalVIP')) {
+    $('totalVIP').textContent = vipPredictions.length;
+  }
+
+  // No verified prediction outcomes have been recorded yet.
+  if ($('accuracy')) $('accuracy').textContent = '—';
+
+  if ($('homeMatches')) {
+    $('homeMatches').innerHTML = upcoming.length
+      ? upcoming.slice(0, 3).map(matchCard).join('')
+      : emptyState(
+          '⚽',
+          'NO UPCOMING FIXTURES',
+          'The provider has not supplied any future kickoff times yet.'
+        );
+  }
+
+  if ($('matchList')) {
+    $('matchList').innerHTML = allPredictions.length
+      ? allPredictions.map(matchCard).join('')
+      : emptyState(
+          '⚽',
+          'NO MATCHES AVAILABLE',
+          'No fixtures with usable odds were returned.'
+        );
+  }
+
+  if ($('homeVIP')) {
+    $('homeVIP').innerHTML = vipPredictions.length
+      ? vipPredictions.slice(0, 2)
+          .map(vipCard).join('')
+      : emptyState(
+          '🏆',
+          'NO QUALIFIED VIP SELECTIONS',
+          'No upcoming selection currently meets the 70% implied-probability screening threshold.'
+        );
+  }
+
+  if ($('vipList')) {
+    $('vipList').innerHTML = vipPredictions.length
+      ? vipPredictions.map(vipCard).join('')
+      : emptyState(
+          '🏆',
+          'NO QUALIFIED VIP SELECTIONS',
+          'The current odds-based screening has not found a selection meeting the VIP threshold.'
+        );
+  }
+
+  // History remains zero until picks and actual outcomes
+  // have been recorded and verified.
+
+  [
+    'homeWon',
+    'homeLost',
+    'homePending',
+    'historyRecorded',
+    'historyWon',
+    'historyLost'
+  ].forEach(id => {
+    if ($(id)) $(id).textContent = '0';
+  });
+
+  [
+    'homeAccuracy',
+    'historyAccuracy'
+  ].forEach(id => {
+    if ($(id)) $(id).textContent = '—';
+  });
+}
+
+async function loadFixtures() {
+  try {
+    const response = await fetch(API.fixtures, {
+      method: 'GET',
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Fixture API returned ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(
+        result.message || 'Fixture request failed.'
+      );
+    }
+
+    const fixtures = result.providerResponse?.data;
+
+    if (!Array.isArray(fixtures)) {
+      throw new Error(
+        'The provider returned an unexpected fixture format.'
+      );
+    }
+
+    allFixtures = fixtures;
+    allPredictions = preparePredictions(fixtures);
+
+    renderDashboard();
+
+    setStatus(
+      'DATA SOURCE CONNECTED',
+      `${fixtures.length} fixtures received successfully. Automatic refresh is active.`,
+      true
+    );
+
+  } catch (error) {
+    console.error('Fixture loading error:', error);
+
+    setStatus(
+      'DATA CONNECTION ISSUE',
+      error.message || 'Unable to load fixture information.',
+      false
+    );
+
+    if (!allFixtures.length) {
+      if ($('homeMatches')) {
+        $('homeMatches').innerHTML = emptyState(
+          '⚠️',
+          'FIXTURE DATA UNAVAILABLE',
+          'The application could not retrieve fixtures. Please try again shortly.'
+        );
+      }
+
+      if ($('matchList')) {
+        $('matchList').innerHTML = emptyState(
+          '⚠️',
+          'FIXTURE DATA UNAVAILABLE',
+          'Please check the data connection.'
+        );
+      }
+    }
+  }
+}
+
+function openMatch(eventId) {
+  const fixture = allFixtures.find(item =>
+    String(item.event_id) === String(eventId)
+  );
+
+  if (!fixture) return;
+
+  const item = allPredictions.find(entry =>
+    String(entry.fixture.event_id) === String(eventId)
+  );
+
+  const markets = item ? item.markets : [];
+
+  const marketHTML = markets.length
+    ? markets.map((market, index) => `
+        <div class="analysis-card">
+          <h3>
+            #${index + 1}
+            ${escapeHTML(market.label)}
+          </h3>
+
+          <p>
+            Odds:
+            ${market.odds
+              ? market.odds.toFixed(2)
+              : 'Not supplied'}
+            <br>
+            Normalized implied probability:
+            <b style="color:#ffd83d">
+              ${probabilityText(market.probability)}
+            </b>
+          </p>
+        </div>
+      `).join('')
+    : emptyState(
+        '📊',
+        'NO USABLE ODDS',
+        'The provider has not supplied sufficient odds for this match.'
+      );
+
+  const overlay = document.createElement('div');
+
+  overlay.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:999;
+    background:rgba(0,0,0,.94);
+    overflow-y:auto;
+    padding:20px;
+  `;
+
+  overlay.innerHTML = `
+    <div style="
+      max-width:650px;
+      margin:20px auto;
+      background:#111;
+      border:1px solid #e5b900;
+      border-radius:15px;
+      padding:18px;
+    ">
+
+      <button id="closeAnalysis" style="
+        float:right;
+        background:#e5b900;
+        color:#080808;
+        border:0;
+        border-radius:20px;
+        padding:8px 13px;
+        font-weight:bold;
+      ">CLOSE ×</button>
+
+      <h2 style="color:#ffd83d;margin:10px 0 20px">
+        MATCH ANALYSIS
+      </h2>
+
+      <div class="analysis-card">
+        <h3>
+          ${escapeHTML(fixture.home)}
+          VS
+          ${escapeHTML(fixture.away)}
+        </h3>
+
+        <p>
+          Competition:
+          ${escapeHTML(fixture.league || 'Virtual Football')}
+          <br>
+          Week:
+          ${escapeHTML(fixture.week || '—')}
+          <br>
+          Match:
+          ${escapeHTML(fixture.match || '—')}
+          <br>
+          Kickoff:
+          ${escapeHTML(formatKickoff(fixture.kickoff_at))}
+          <br>
+          Event ID:
+          ${escapeHTML(fixture.event_id)}
+        </p>
+      </div>
+
+      <h3 style="color:#ffd83d;margin:20px 0 12px">
+        AVAILABLE MARKET ANALYSIS
+      </h3>
+
+      ${marketHTML}
+
+      <p style="
+        color:#888;
+        font-size:10px;
+        line-height:1.7;
+        margin-top:15px;
+      ">
+        Probabilities are normalized estimates derived from
+        the provider's supplied odds. They are not independently
+        validated predictions or guarantees.
+      </p>
+
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  overlay.querySelector('#closeAnalysis')
+    .addEventListener('click', () => overlay.remove());
+}
+
+async function checkHealth() {
+  try {
+    const response = await fetch(API.health, {
+      cache: 'no-store'
+    });
+
+    if (!response.ok) return;
+
+    const data = await response.json();
+
+    if (data.success && data.status === 'online') {
+      setStatus(
+        'SERVER ONLINE',
+        'Application server is responding. Checking fixture feed...',
+        true
+      );
+    }
+  } catch (error) {
+    console.error('Health check failed:', error);
+  }
+}
+
+async function initializeApp() {
+  await checkHealth();
+  await loadFixtures();
+
+  // Provider recommends polling every 30 seconds.
+  setInterval(loadFixtures, 30000);
+}
+
+document.addEventListener('DOMContentLoaded', initializeApp);
 </script>
 
 </body>
